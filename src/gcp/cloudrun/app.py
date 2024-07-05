@@ -11,7 +11,10 @@ storage_client = storage.Client()
 def index():
     data = request.get_json()
 
+    print(f"Received data: {data}")  # 记录接收到的数据
+
     if not data or 'name' not in data or 'bucket' not in data:
+        print("Invalid notification")
         return 'Invalid notification', 400
 
     bucket_name = data['bucket']
@@ -21,11 +24,15 @@ def index():
     return jsonify({'status': 'File processed.'}), 200
 
 def process_file(bucket_name, file_name):
+    print(f"Processing file: {file_name} in bucket: {bucket_name}")  # 记录处理的文件信息
+
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(file_name)
     content = blob.download_as_string().decode('utf-8')
 
     rows = list(csv.DictReader(content.splitlines()))
+    print(f"Rows to insert: {rows}")  # 记录要插入的行
+
     errors = client.insert_rows_json("oh_practice.run_table", rows)
 
     if errors:
